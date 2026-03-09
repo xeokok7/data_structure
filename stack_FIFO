@@ -1,0 +1,114 @@
+#include <stdio.h>
+#define SIZE 5
+
+int front = -1;
+int rear = -1;
+
+int S[SIZE] = {0};
+
+int IsEmpty() // 큐가 비어있는지 확인
+{
+	if (front == -1 && rear == -1)
+	{
+		printf("큐가 없습니다.\n");
+		return 0;
+	}
+	else
+		return 1;
+}
+
+int IsFull() // 큐가 꽉 차있는지 확인
+{
+	if (front == (rear + 1) % SIZE)
+	{
+		printf("큐가 꽉 찼습니다.");
+		return 0;
+	}
+	else
+		return 1;
+}
+
+void enqueue(int num) // 큐를 삽입
+{
+	
+	rear = (rear + 1) % SIZE; //rear++ , 만약 rear > SIZE일 경우 처음으로 돌아감 (circular)
+	S[rear] = num;
+
+	if (front == -1)  // 큐가 비어있을때 최초로 enqueue한 경우 front랑 rear를 모두 0으로 지정
+		front = 0;
+}
+
+int dequeue() // 큐를 추출
+{
+	return S[front];
+	
+}
+
+int peek() // 큐를 나타냄, but 빼내기 X
+{
+	return S[rear];
+}
+
+void main()
+{
+	int x;
+	int y;
+	int i;
+
+	printf("enqueue =1, dequeue = 2, peek = 3, exit = 0\n"); // 변수 x 로 큐를 어떻게 할지 지정
+
+	while (1)
+	{
+		scanf_s("%d", &x);
+
+		if (x == 1) // enqueue
+		{
+			if (IsFull() == 1) // 큐가 꽉 차있지 않을때 실행 
+			{
+				printf("정수 입력 : ");
+				scanf_s("%d", &y);
+
+				enqueue(y);
+			}
+				
+		}
+
+		else if (x == 2) // dequeue
+		{
+			if (IsEmpty() == 1) // 큐가 비어있지 않을때 실행
+			{
+				printf("%d를 추출함.\n", dequeue());
+
+				if (front == rear) // 추출하고 만약 큐가 비어있으면 front = rear = -1 으로 초기화
+				{
+					front = -1;
+					rear = -1;
+				}
+
+				else
+				front = (front + 1) % SIZE;
+				
+			}
+		}
+
+		else if (x == 3) // peek
+		{
+			if (IsEmpty() == 1)
+				printf("%d을 peek.\n", peek());
+		}
+
+		else if (x == 0) // exit
+			break;
+		
+		printf("현재 큐 : ");  // 현재 큐 상황 출력
+
+		for(i = 0; i<= SIZE-1; i++)
+			printf("%d ", S[i]);
+
+		printf("\nfront = %d, rear = %d\n", front, rear);
+
+	}
+}
+
+
+
