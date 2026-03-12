@@ -1,0 +1,63 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <string.h>
+int main()    //DROP하면 pile2에 쌓이고 TAKE할때는 pile1에서 빼내는 구조
+{
+    int i, n, m;
+    int p1, p2;
+    char s[100];
+
+    while(1) // n == 0 일때까지 반복
+    {
+        p1 = 0;  //pile1
+        p2 = 0;  // pile2
+
+        scanf("%d", &n);
+
+        if (n == 0) 
+            break;
+
+        for (i = 1; i <= n; i++) // n회 반복
+        {
+            scanf("%s %d", s, &m);
+
+            if (strcmp(s, "DROP") == 0)
+            {
+                printf("DROP 2 %d\n", m);
+                p2 += m;
+            }
+
+            if (strcmp(s, "TAKE") == 0)
+                if(p1+p2>=m) // m이 table에 있는 총 그릇보다 같거나 적은지 확인
+                {
+                    if (p1 >= m)  // m이 pile1보다 적으면 pile1에서 모두 pop()
+                    {
+                        printf("TAKE 1 %d\n", m);
+                            p1 -= m;
+                    }
+                    else   // m이 pile1보다 많으면
+                    {
+                        if (p1 != 0) // pile1이 안비어있으면 일단 pile1에서 모두 pop()
+                        {
+                            printf("TAKE 1 %d\n", p1);
+                            m -= p1;  // m에서 방금 pop()한 값을 빼기
+                            p1 = 0;  // 그러면 pile1은 비어있는 상태
+                        }
+                        
+                            printf("MOVE 2->1 %d\n", p2);  
+                            p1 += p2;  //pile2을 pile2에 모두 옮김
+                            p2 = 0;   // 그러면 pile2는 비어있는 상태
+
+                            printf("TAKE 1 %d\n", m);
+                            p1 -= m;  // 나머지 m을 모두 pop()
+                    }
+                }
+        
+        }
+        printf("\n");
+    }
+
+
+
+    return 0;
+}
