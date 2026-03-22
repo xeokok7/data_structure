@@ -1,0 +1,44 @@
+import sys
+
+input = sys.stdin.readline
+
+def find(x, parent):
+    while x != parent[x]:
+        x = parent[x]
+    return x
+
+def union(p, q, parent, size):
+    nump = find(p, parent)
+    numq = find(q, parent)
+    
+    if nump == numq:
+        return
+
+    if size[nump] < size[numq]:
+        nump, numq = numq, nump
+        
+    parent[numq] = nump
+    size[nump] += size[numq]
+
+def main():
+    n, m = map(int, input().split())
+    
+    parent = [i for i in range(n + 1)]
+    size = [1] * (n + 1)
+    
+    for _ in range(m):
+        k, p, q = map(int, input().split())
+        
+        if k == 0:
+            union(p, q, parent, size)
+        elif k == 1:
+            parentp = find(p, parent)
+            parentq = find(q, parent)
+            
+            if parentp == parentq:
+                print("YES\n")
+            else:
+                print("NO\n")
+
+if __name__ == '__main__':
+    main()
