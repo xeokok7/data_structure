@@ -1,0 +1,70 @@
+#include <stdio.h>
+#define SIZE 1000000
+
+int parent[SIZE];
+int size[SIZE];
+int k;
+
+int Find(int x)
+{
+    while(x != parent[x])  // 
+        x = parent[x];
+    return x;
+}
+
+void Union(int p, int q)
+{
+    int nump, numq, temp;
+
+    nump = Find(p);  // 부모들 찾기
+    numq = Find(q);
+
+    if(size[nump] < size[numq])  // size가 p < q 이면 둘이 바꾸기
+    {
+        temp = nump;
+        nump = numq;
+        numq = temp;
+    }
+
+    parent[numq] = nump;  // q 부모에 p 넣기
+    size[nump] += size[numq];  // p에 사이즈 추가
+}
+
+
+
+void main()
+{
+
+    int i, n, m, k, p, q, parentp, parentq;
+    
+    scanf("%d %d", &n, &m);
+
+    for(i=0; i<=n; i++)  // 초기화
+    {
+        parent[i] = i;
+        size[i] = 1;
+    }
+
+    for(i=0; i<m; i++)
+    {
+        scanf("%d %d %d", &k, &p, &q);
+
+        if(k==0)
+        {
+            Union(p , q);
+        }
+
+        else if(k==1)
+        {
+            parentp = Find(p);
+            parentq = Find(q);
+
+            if(parentp == parentq)  // 두 수의 부모가 같으면 같은 집합에 있음
+                printf("YES\n");
+
+            else
+                printf("NO\n");
+        }
+    }
+        
+}
