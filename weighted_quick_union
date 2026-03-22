@@ -1,0 +1,74 @@
+#include <stdio.h>
+
+int parent[100];
+int size[100];
+int k;
+
+int Find(int x)
+{
+    while(x != parent[x])  // 
+        x = parent[x];
+    return x;
+}
+
+void Union(int p, int q)
+{
+    int nump, numq, temp;
+
+    nump = Find(p);  // 부모들 찾기
+    numq = Find(q);
+
+    if(size[nump] < size[numq])  // size가 p < q 이면 둘이 바꾸기
+    {
+        temp = nump;
+        nump = numq;
+        numq = temp;
+    }
+
+    parent[numq] = nump;  // q 부모에 p 넣기
+    size[nump] += size[numq];  // p에 사이즈 추가
+}
+
+void Print()
+{
+    int i;
+    for(i=0; i<k; i++)
+        printf("%d ", i);
+
+    printf("\n");
+
+    for(i=0; i<k; i++)
+        printf("%d ", parent[i]);
+    
+    printf("\n");
+
+    for(i=0; i<k; i++)
+        printf("%d ", size[i]);
+    
+    printf("\n\n");
+}
+
+void main()
+{
+
+    int i;
+    
+    printf("select length : ");
+    scanf("%d", &k);
+
+    for(i=0; i<=k-1; i++)  // 초기화
+    {
+        parent[i] = i;
+        size[i] = 1;
+    }
+
+    Union(1, 2);
+    Print();
+
+    Union(3, 4);
+    Print();
+
+    Union(2, 4);
+    Print();
+        
+}
