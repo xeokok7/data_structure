@@ -1,0 +1,411 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <time.h>
+#define RMAX 100
+
+int created = 0;
+int deleted = 0;
+
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
+typedef struct treeNode {
+    int key;
+    int height;
+    int leftSize;
+    struct treeNode* right;
+    struct treeNode* left;
+} treeNode;
+
+treeNode* createNode(int key) {
+
+    treeNode* newNode = (treeNode*)malloc(sizeof(treeNode));
+    if (newNode == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(EXIT_FAILURE);
+    }
+    newNode->key = key;
+    newNode->height = 1;
+    newNode->leftSize = 0;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+int getHeight(treeNode* node) {
+    if (node == NULL)
+        return 0;
+    return node->height;
+}
+
+int getBalance(treeNode* node) {
+    if (node == NULL)
+        return 0;
+    return getHeight(node->left) - getHeight(node->right);
+}
+
+void updateHeight(treeNode* node) {
+    if (node != NULL)
+        node->height = max(getHeight(node->left), getHeight(node->right)) + 1;
+}
+
+treeNode* rotateLeft(treeNode* x) {
+    treeNode* y = x->right;
+    treeNode* T2 = y->left;
+
+    y->left = x;
+    x->right = T2;
+
+    updateHeight(x);
+    updateHeight(y);
+
+    y->leftSize = x->leftSize + 1 + y->leftSize; // leftsize modify
+
+    return y;
+}
+
+treeNode* rotateRight(treeNode* y) {
+    treeNode* x = y->left;
+    treeNode* T2 = x->right;
+
+    x->right = y;
+    y->left = T2;
+
+    updateHeight(x);
+    updateHeight(y);
+
+    y->leftSize -= x->leftSize + 1; // leftsize modify
+
+    return x;
+}
+
+treeNode* insert(treeNode* node, int key) {
+
+    if (node == NULL) {
+        created = 1;
+        return createNode(key);
+    }
+
+
+    if (key < node->key)
+    {
+        node->left = insert(node->left, key);
+        if (created == 1)
+            node->leftSize++;
+    }
+
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+    else {
+        created = 0;
+        return node;
+    }
+
+
+    updateHeight(node);
+
+    treeNode* left = node->left;
+    treeNode* right = node->right;
+
+    int balance = getBalance(node);
+
+    if (balance > 1 && key < left->key)
+        return rotateRight(node);
+
+    if (balance <-1 && key > right->key)
+        return rotateLeft(node);
+
+    if (balance > 1 && key > left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+
+    if (balance < -1 && key < right->key) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+
+    return node;
+}
+
+treeNode* findMin(treeNode* node) {
+    treeNode* current = node;
+
+    while (current->left != NULL)
+        current = current->left;
+    return current;
+}
+
+treeNode* findMax(treeNode* node) {
+    treeNode* current = node;
+
+    while (current->right != NULL)
+        current = current->right;
+    return current;
+}
+
+treeNode* deleteNode(treeNode* root, int key) {
+    if (root == NULL) {
+        deleted = 0;
+        return root;
+    }
+
+
+    if (key < root->key) {
+        root->left = deleteNode(root->left, key);
+        if (deleted == 1)
+            root->leftSize--;
+    }
+
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+    else {
+        deleted = 1;
+        if ((root->left) == NULL || (root->right) == NULL) {
+            treeNode* temp = root->left ? root->left : root->right;
+            if (temp == NULL) {
+                temp = root;
+                root = NULL;
+            }
+            else {
+                *root = *temp;
+            }
+            free(temp);
+        }
+        else {
+            treeNode* temp = findMin(root->right);
+            root->key = temp->key;
+            deleted = 0;
+            root->right = deleteNode(root->right, temp->key);
+        }
+    }
+
+    if (root == NULL)
+        return root;
+
+    updateHeight(root);
+
+    int balance = getBalance(root);
+
+    if (balance > 1 && getBalance(root->left) >= 0)
+        return rotateRight(root);
+
+    if (balance < -1 && getBalance(root->right) <= 0)
+        return rotateLeft(root);
+
+
+    if (balance > 1 && key > getBalance(root->left) < 0) {
+        root->left = rotateLeft(root->left);
+        return rotateRight(root);
+    }
+
+    if (balance < -1 && key < getBalance(root->right) > 0) {
+        root->right = rotateRight(root->right);
+        return rotateLeft(root);
+    }
+
+    return root;
+}
+
+void printPreorder(treeNode* root) {
+    if (root != NULL) {
+        printf("%d ", root->key);
+        printPreorder(root->left);
+        printPreorder(root->right);
+    }
+}
+
+void freeTree(treeNode* root) {
+    if (root != NULL) {
+        freeTree(root->left);
+        freeTree(root->right);
+        free(root);
+    }
+}
+
+treeNode* search(treeNode* node, int key) {
+
+    if (node == NULL) {
+        printf("%d isn't exist.\n", key);
+        return 0;
+    }
+
+    if (key < node->key)
+        return search(node->left, key);
+
+    else if (key > node->key)
+        return search(node->right, key);
+    else {
+        printf("%d found!\n", key);
+        return node;
+    }
+      
+
+}
+
+void printLessThan(treeNode* node, int x) {
+
+    if (node == NULL)
+        return;
+
+    printLessThan(node->left, x); // use inorder to ascending array
+    if (node->key < x)
+        printf("%d ", node->key);
+    printLessThan(node->right, x);
+
+}
+
+void printGreaterThan(treeNode* node, int x) {
+
+    if (node == NULL)
+        return;
+
+    printGreaterThan(node->left, x); // use inorder to ascending array
+    if (node->key > x)
+        printf("%d ", node->key);
+    printGreaterThan(node->right, x);
+
+}
+
+void printRange(treeNode* node, int x, int y) {
+
+    if (node == NULL)
+        return;
+
+    printRange(node->left, x, y); // use inorder to ascending array
+    if (node->key > x && node->key < y) // bigger than x, smaller than y
+        printf("%d ", node->key);
+    printRange(node->right, x, y);
+
+}
+
+void Successor(treeNode* node, int x) {
+
+    if (findMax(node)->key == x) {
+        printf("There is no successor.");
+        return;
+    }
+
+    treeNode* current = search(node, x);
+
+    if (current->right != NULL) // if there is right node
+    {
+        printf("successor(%d) : %d", x, findMin(current->right)->key);
+        return;
+    }
+
+    current = node;
+
+    while (node != NULL) { // if there is no right node
+        if (x < node->key)
+        {
+            current = node;
+            node = node->left;
+        }
+        else if (x > node->key)
+            node = node->right;
+        else
+            break;
+    }
+
+
+    printf("Successor(%d) : %d", x, current->key);
+
+    return;
+
+}
+
+void Select(treeNode* node, int k) {
+
+    while (node != NULL) {
+
+        int col = node->leftSize + 1;
+
+        if (k == col) {
+            printf("select(%d) : %d", k, node->key);
+            return;
+        }
+        else if (k < col)
+            node = node->left;
+        else {
+            k -= col;
+            node = node->right;
+        }
+    }
+
+    if (node == NULL) {
+        printf("node is not exist.");
+        return;
+    }
+
+}
+
+int main() {
+
+    int s[100];
+    int i, j;
+
+    treeNode* root = NULL;
+
+    s[0] = 15;
+    s[1] = 50;
+
+    srand(time(NULL));
+
+    for (i = 2; i < 50; i++) { // 중복 없는 랜덤 숫자 생성
+        s[i] = (int)rand() % RMAX;
+
+        for (j = 0; j < i; j++) {
+            if (s[j] == s[i]) {
+                i--;
+                break;
+            }
+        }
+    }
+
+    for (i = 0; i < 50; i++) { // 숫자 insert
+        created = 0;
+        root = insert(root, s[i]);
+    }
+
+    search(root, 15);
+    search(root, 20);
+    search(root, 50);
+    search(root, 70);
+    search(root, 90);
+
+ 
+
+    printf("max : %d ", findMax(root)->key);
+    printf("%\n");
+
+    printf("less than 15 : ");
+    printLessThan(root, 15);
+    printf("\n");
+
+    printf("greater than 50 : ");
+    printGreaterThan(root, 50);
+    printf("\n");
+
+    printf("between 15, 50 : ");
+    printRange(root, 15, 50);
+    printf("\n");
+
+   
+    Successor(root, 50);
+    printf("%\n");
+
+    Select(root, 4);
+    printf("%\n");
+
+    deleted = 0;
+    root = deleteNode(root, 15);
+    printf("deleted 15\n");
+
+    printf("between 15, 50 : ");
+    printRange(root, 15, 50);
+    printf("\n");
+
+    return 0;
+}
